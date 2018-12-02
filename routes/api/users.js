@@ -15,9 +15,9 @@ const validateLoginInput = require('../../validation/login');
 const router = express.Router();
 
 
-// @route POST /api/users/register
-// @desc Register user.
-// @access Public
+// @route: POST /api/users/register
+// @desc: Register user.
+// @access: Public
 
 router.post('/register', async (req, res) => {
     try {
@@ -34,7 +34,7 @@ router.post('/register', async (req, res) => {
 
         if (user) {
             errors.email = 'Email already exists!';
-            return res.status(400).json({ errors });
+            return res.status(400).json(errors);
         }
 
         const avatar = gravatar.url(email, {
@@ -65,9 +65,9 @@ router.post('/register', async (req, res) => {
 
 
 
-// @route POST /api/users/login
-// @desc Login user / Returning JWT token.
-// @access Public
+// @route: POST /api/users/login
+// @desc: Login user / Returning JWT token.
+// @access: Public
 
 router.post('/login', async (req, res) => {
     try {
@@ -81,17 +81,17 @@ router.post('/login', async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
-
+        
         if (!user) {
             errors.email = 'User not found!';
-            return res.status(404).json({ errors });
+            return res.status(404).json(errors);
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
             errors.password = 'Incorrect password!';
-            return res.status(404).json({ errors });
+            return res.status(404).json(errors);
         }        
 
         const payload = {
@@ -115,9 +115,9 @@ router.post('/login', async (req, res) => {
 
 
 
-// @route GET /api/users/current
-// @desc Return current user.
-// @access Private
+// @route: GET /api/users/current
+// @desc: Return current user.
+// @access: Private
 
 router.get('/current', passport.authenticate('jwt', { session: false }), (req, res) => {
     res.json({
