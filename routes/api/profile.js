@@ -1,6 +1,5 @@
 
 const express = require('express');
-const mongoose = require('mongoose');
 const passport = require('passport');
 
 
@@ -8,6 +7,8 @@ const User = require('../../models/User');
 const Profile = require('../../models/Profile');
 
 const validateProfileInput = require('../../validation/profile');
+const validateExperienceInput = require('../../validation/experience');
+const validateEducationInput = require('../../validation/education');
 
 
 
@@ -28,7 +29,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), async (req, re
         const profile = await Profile.findOne({ user: req.user.id }).populate('user', ['name', 'avatar'])
 
         if (!profile) {
-            errors.noProfile = 'There is no profile for this user!'
+            errors.noprofile = 'There is no profile for this user!'
             return res.status(404).json({ errors });
         }
 
@@ -109,4 +110,228 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req, r
 });
 
 
-module.exports = router;
+
+// @route: GET /api/profile/handle/:handle
+// @desc: Get profile based on handle.
+// @access: Public
+
+
+router.get('/handle/:handle', async (req, res) => {
+    try {
+
+        const errors = {};
+
+        const profile = await Profile.findOne({ handle: req.params.handle }).populate('user', ['name', 'avatar']);
+
+        if (!profile) {
+            errors.noprofile = 'There is no profile for this user.';
+            return res.status(404).json(errors);
+        }
+
+        res.json(profile);
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+
+
+
+// @route: GET /api/profile/user/:user_id
+// @desc: Get profile based on user id.
+// @access: Public
+
+
+router.get('/user/:user_id', async (req, res) => {
+    try {
+
+        const errors = {};
+
+        const profile = await Profile.findOne({ user: req.params.user_id }).populate('user', ['name', 'avatar']);
+
+        if (!profile) {
+            errors.noprofile = 'There is no profile for this user.';
+            return res.status(404).json(errors);
+        }
+
+        res.json(profile);
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+
+
+// @route: GET /api/profile/all
+// @desc: Get all profiles.
+// @access: Public
+
+
+router.get('/all', async (req, res) => {
+    try {
+
+        const errors = {};
+
+        const profiles = await Profile.find().populate('user', ['name', 'avatar']);
+
+        if (!profiles) {
+            errors.noprofile = 'There are no profiles!';
+            return res.status(404).json(error);
+        }
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+
+
+// @route: POST /api/profile/experience
+// @desc: Add experience to profile.
+// @access: Private
+
+
+router.post('/experience', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    try {
+
+        const { isValid, errors } = validateExperienceInput(req.body);
+
+        if (!isValid) {
+            return res.status(400).json(errors);
+        }
+
+        const profile = await Profile.findOne({ user: req.user.id });
+
+        profile.experience.unshift({
+            title: req.body.title,
+            company: req.body.company,
+            location: req.body.location,
+            from: req.body.from,
+            to: req.body.to,
+            current: req.body.current,
+            description: req.body.description
+        });
+
+        const updatedProfile = await profile.save();
+
+        res.json(updatedProfile);
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+
+
+
+// @route: DELETE /api/profile/experience/:exp_id
+// @desc: Delete experience from profile.
+// @access: Private
+
+
+router.delete('/experience/:exp_id', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    try {
+
+        const profile = await Profile.findOne({ user: req.user.id });
+
+        profile.experience = profile.experience.filter(experience => experience.id !== req.params.exp_id);
+
+        const newProfile = await profile.save();
+
+        res.json(newProfile);
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+
+
+
+// @route: POST /api/profile/education
+// @desc: Add education to profile.
+// @access: Private
+
+
+router.post('/education', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    try {
+
+        const { isValid, errors } = validateEducationInput(req.body);
+
+        if (!isValid) {
+            return res.status(400).json(errors);
+        }
+
+        const profile = await Profile.findOne({ user: req.user.id });
+
+        profile.education.unshift({
+            school: req.body.school,
+            degree: req.body.degree,
+            field: req.body.field,
+            from: req.body.from,
+            to: req.body.to,
+            current: req.body.current,
+            description: req.body.description
+        });
+
+        const updatedProfile = await profile.save();
+
+        res.json(updatedProfile);
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+
+
+
+// @route: DELETE /api/profile/education/:edu_id
+// @desc: Delete education from profile.
+// @access: Private
+
+
+router.delete('/education/:edu_id', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    try {
+
+        const profile = await Profile.findOne({ user: req.user.id });
+
+        profile.education = profile.education.filter(education => education.id !== req.params.edu_id);
+
+        const newProfile = await profile.save();
+
+        res.json(newProfile);
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+
+
+
+// @route: DELETE /api/profile
+// @desc: Delete user & profile.
+// @access: Private
+
+
+router.delete('/', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    try {
+
+        await Profile.findOneAndRemove({ user: req.user.id });
+
+        await User.findOneAndRemove({ _id: req.user.id });
+
+        res.json({ success: true });
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+
+
+
+module.exports = router; 
