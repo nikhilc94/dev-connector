@@ -43,9 +43,7 @@ Landing.propTypes = {
 }
 
 
-const mapStateToProps = state => ({
-  auth: state.auth
-});
+const mapStateToProps = ({ auth }) => ({ auth });
 
 
 export default connect(mapStateToProps)(Landing);
