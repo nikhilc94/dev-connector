@@ -8,9 +8,11 @@ import TextFieldGroup from '../common/TextFieldGroup';
 import TextAreaFieldGroup from '../common/TextAreaFieldGroup';
 import SelectListGroup from '../common/SelectListGroup';
 import InputGroup from '../common/InputGroup';
-import { createProfile } from '../../actions/profileActions';
+import { createProfile, getCurrentProfile } from '../../actions/profileActions';
+import isEmpty from '../../validation/isEmpty';
 
-class CreateProfile extends Component {
+
+class EditProfile extends Component {
 
     constructor(props) {
         super(props);
@@ -23,7 +25,7 @@ class CreateProfile extends Component {
             location: '',
             status: '',
             skills: '',
-            githubusername: '',
+            githubUsername: '',
             bio: '',
             twitter: '',
             facebook: '',
@@ -35,10 +37,38 @@ class CreateProfile extends Component {
         this.onSubmit = this.onSubmit.bind(this);
     }
 
+    componentDidMount() {
+        this.props.getCurrentProfile()
+    }
+
     componentWillReceiveProps(nextProps) {
+        
         if (nextProps.errors) {
             this.setState({ errors: nextProps.errors });
         }
+
+        if (nextProps.profile.profile) {
+            const profile = nextProps.profile.profile;
+
+            profile.social = !isEmpty(profile.social) ? profile.social : {};
+
+            this.setState({
+                handle: profile.handle,
+                company: !isEmpty(profile.company) ? profile.company : '',
+                website: !isEmpty(profile.website) ? profile.website : '',
+                location: !isEmpty(profile.location) ? profile.location : '',
+                status: profile.status,
+                skills: profile.skills.join(','),
+                githubUsername: !isEmpty(profile.githubUsername) ? profile.githubUsername : '',
+                bio: !isEmpty(profile.bio) ? profile.bio : '',
+                twitter: !isEmpty(profile.social.twitter) ? profile.social.twitter : '',
+                facebook: !isEmpty(profile.social.facebook) ? profile.social.facebook : '',
+                youtube: !isEmpty(profile.social.youtube) ? profile.social.youtube : '',
+                linkedin: !isEmpty(profile.social.linkedin) ? profile.social.linkedin : '',
+                instagram: !isEmpty(profile.social.instagram) ? profile.social.instagram : ''
+            });
+        }
+
     }
 
     onSubmit(e) {
@@ -50,7 +80,7 @@ class CreateProfile extends Component {
             location: this.state.location,
             status: this.state.status,
             skills: this.state.skills,
-            githubusername: this.state.githubusername,
+            githubUsername: this.state.githubUsername,
             bio: this.state.bio,
             twitter: this.state.twitter,
             facebook: this.state.facebook,
@@ -122,10 +152,7 @@ class CreateProfile extends Component {
                 <div className="container">
                     <div className="row">
                         <div className="col-md-8 m-auto">
-                            <h1 className="display-4 text-center">Create Your Profile</h1>
-                            <p className="lead text-center">
-                                Let's get some information to make your profile stand out
-                            </p>
+                            <h1 className="display-4 text-center">Edit Profile</h1>
                             <small className="d-block pb-3">* = required fields</small>
                             <form onSubmit={this.onSubmit}>
 
@@ -197,10 +224,10 @@ class CreateProfile extends Component {
 
                                 <TextFieldGroup 
                                     placeholder="GitHub username"
-                                    name="githubusername"
-                                    value={this.state.githubusername}
+                                    name="githubUsername"
+                                    value={this.state.githubUsername}
                                     onChange={this.onChange}
-                                    error={errors.githubusername}
+                                    error={errors.githubUsername}
                                     info="If you want your latest repos and a GitHub link, include your username"
                                 />
 
@@ -238,11 +265,13 @@ class CreateProfile extends Component {
 }
 
 
-CreateProfile.propTypes = {
+EditProfile.propTypes = {
     profile: PropTypes.object.isRequired,
     errors: PropTypes.object.isRequired,
+    createProfile: PropTypes.func.isRequired,
+    getCurrentProfile: PropTypes.func.isRequired
 }
 
 const mapStateToProps = ({ profile, errors }) => ({ profile, errors });
 
-export default connect(mapStateToProps, { createProfile })(withRouter(CreateProfile));
+export default connect(mapStateToProps, { createProfile, getCurrentProfile })(withRouter(EditProfile));
