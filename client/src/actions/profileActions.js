@@ -49,11 +49,43 @@ export const addExperience = (expData, history) => async dispatch => {
   }
 };
 
+// Delete experience,
+export const deleteExperience = id => async dispatch => {
+  try {
+    const res = await axios.delete(`/api/profile/experience/${id}`);
+    dispatch({
+      type: GET_PROFILE,
+      payload: res.data
+    });
+  } catch (error) {
+    dispatch({
+      type: GET_ERRORS,
+      payload: error.response.data
+    });
+  }
+};
+
 // Add education.
 export const addEducation = (eduData, history) => async dispatch => {
   try {
     await axios.post("/api/profile/education", eduData);
     history.push("/dashboard");
+  } catch (error) {
+    dispatch({
+      type: GET_ERRORS,
+      payload: error.response.data
+    });
+  }
+};
+
+// Delete experience,
+export const deleteEducation = id => async dispatch => {
+  try {
+    const res = await axios.delete(`/api/profile/education/${id}`);
+    dispatch({
+      type: GET_PROFILE,
+      payload: res.data
+    });
   } catch (error) {
     dispatch({
       type: GET_ERRORS,
